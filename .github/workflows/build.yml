@@ -3,6 +3,7 @@ name: build
 on:
   push:
     branches: [main, master]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -38,3 +39,36 @@ jobs:
           name: DualRouterDashboard-windows
           path: dist/DualRouterDashboard.exe
           if-no-files-found: error
+
+      - name: Publish release (on version tags)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Dual-Router Dashboard ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          files: dist/DualRouterDashboard.exe
+          make_latest: true
+          body: |
+            🌐 **Dual-Router Dashboard ${{ github.ref_name }}**
+
+            A colourful Windows desktop app for monitoring a dual-router
+            (WISP) network — live device tables for the indoor LAN and the
+            WAN leg between the routers, plus:
+
+            - ⚡ built-in speed test (download / upload / latency / jitter)
+            - 📡 ping monitor, 🗺 traceroute viewer, 🔌 TCP port scanner
+            - 📶 access control — set how many devices may use the internet,
+              register devices manually by LAN IP or MAC
+            - 🌈 5 vivid themes (Sunset, Ocean, Neon, Candy, Forest — no black)
+            - 🔔 sound + toast alerts, 📊 live latency graph, 📤 CSV/JSON export
+
+            ### Install
+            1. Download **DualRouterDashboard.exe** below
+            2. Double-click it — no Python or installation needed
+            3. Optional: run `install_shortcut.ps1` to add a Desktop/Start
+               Menu shortcut
+
+            > Windows SmartScreen may note the build is unsigned — choose
+            > *More info ▸ Run anyway*.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
