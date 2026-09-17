@@ -1,0 +1,40 @@
+name: build
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tool
+        run: pip install pyinstaller
+
+      - name: Generate icon
+        run: python make_icon.py
+
+      - name: Build exe
+        run: >
+          python -m PyInstaller --noconfirm --clean --onefile --windowed
+          --name DualRouterDashboard
+          --icon app_icon.ico
+          dual_router_gui.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DualRouterDashboard-windows
+          path: dist/DualRouterDashboard.exe
+          if-no-files-found: error
